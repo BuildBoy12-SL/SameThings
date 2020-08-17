@@ -1,4 +1,4 @@
-﻿using Exiled.API.Features;
+using Exiled.API.Features;
 using MEC;
 using System.Collections.Generic;
 using UnityEngine;
