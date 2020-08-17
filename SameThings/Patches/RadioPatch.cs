@@ -3,7 +3,7 @@ using HarmonyLib;
 namespace SameThings.Patches
 {
     [HarmonyPatch(typeof(Radio), nameof(Radio.UseBattery))]
-    internal class RadioPatch
+    internal static class RadioPatch
     {
         private static bool Prefix()
         {

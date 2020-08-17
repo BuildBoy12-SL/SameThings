@@ -3,7 +3,7 @@ using HarmonyLib;
 namespace SameThings.Patches
 {
     [HarmonyPatch(typeof(BreakableWindow), nameof(BreakableWindow.ServerDamageWindow))]
-    internal class WindowHealthPatch
+    internal static class WindowHealthPatch
     {
         private static void Prefix(BreakableWindow __instance)
         {

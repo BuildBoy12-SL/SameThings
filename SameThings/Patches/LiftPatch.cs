@@ -3,7 +3,7 @@ using HarmonyLib;
 namespace SameThings.Patches
 {
     [HarmonyPatch(typeof(Lift), nameof(Lift.UseLift))]
-    internal class LiftPatch
+    internal static class LiftPatch
     {
         private static void Prefix(Lift __instance)
         {

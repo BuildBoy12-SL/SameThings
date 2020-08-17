@@ -113,7 +113,7 @@ namespace SameThings
 
         [Description("Teams that can trigger the tesla gates.")]
         public List<Team> TeslaTriggerableTeam { get; set; } = new List<Team>
-        { 
+        {
             Team.SCP,
             Team.MTF,
             Team.CHI,
@@ -123,7 +123,7 @@ namespace SameThings
 
         [Description("Ignores these items during cleanup.")]
         public List<ItemType> ItemCleanupIgnore { get; set; } = new List<ItemType>
-        { 
+        {
             ItemType.MicroHID,
             ItemType.KeycardO5
         };
@@ -151,7 +151,7 @@ namespace SameThings
         };
 
         [Description("Amount of time a role can stand still before their natural regen cancels.")]
-        public Dictionary<RoleType, int> SelfHealingDuration { get; set; } = new Dictionary<RoleType, int> 
+        public Dictionary<RoleType, int> SelfHealingDuration { get; set; } = new Dictionary<RoleType, int>
         {
             { RoleType.Scp096, 5 }
         };

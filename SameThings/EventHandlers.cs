@@ -3,8 +3,6 @@ using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using MEC;
 using Mirror;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -17,6 +15,8 @@ namespace SameThings
     internal class EventHandlers
     {
         internal SameThings Plugin => SameThings.Instance;
+
+        #region Subscription
 
         internal void SubscribeAll()
         {
@@ -52,17 +52,21 @@ namespace SameThings
             Warhead.Detonated -= HandleWarheadDetonation;
         }
 
+        #endregion
+
+        #region Handlers
+
         public void HandleRoundStart()
         {
-            if (Plugin.Config.AutoWarheadLock) 
+            if (Plugin.Config.AutoWarheadLock)
                 Exiled.API.Features.Warhead.IsLocked = false;
-            if (Plugin.Config.ForceRestart > -1) 
-                State.RunCoroutine(RunForceRestart());
-            if (Plugin.Config.AutoWarheadTime > -1) 
-                State.RunCoroutine(RunAutoWarhead());
-            if (Plugin.Config.ItemAutoCleanup > -1) 
-                State.RunCoroutine(RunAutoCleanup());
-            if (Plugin.Config.DecontaminationTime > -1) 
+            if (Plugin.Config.ForceRestart > -1)
+                State.RunCoroutine(HandlerHelper.RunForceRestart());
+            if (Plugin.Config.AutoWarheadTime > -1)
+                State.RunCoroutine(HandlerHelper.RunAutoWarhead());
+            if (Plugin.Config.ItemAutoCleanup > -1)
+                State.RunCoroutine(HandlerHelper.RunAutoCleanup());
+            if (Plugin.Config.DecontaminationTime > -1)
                 LightContainmentZoneDecontamination.DecontaminationController.Singleton.TimeOffset = (float)((11.7399997711182 - Plugin.Config.DecontaminationTime) * 60.0);
             if (Plugin.Config.GeneratorDuration > -1)
             {
@@ -73,7 +77,7 @@ namespace SameThings
                 }
             }
             if (Plugin.Config.SelfHealingDuration.Count > 0)
-                State.RunCoroutine(RunSelfHealing());
+                State.RunCoroutine(HandlerHelper.RunSelfHealing());
             if (Plugin.Config.Scp106LureAmount > 0)
                 Object.FindObjectOfType<LureSubjectContainer>().SetState(true);
         }
@@ -112,7 +116,7 @@ namespace SameThings
         public void HandleSetClass(ChangingRoleEventArgs ev)
         {
             if (Plugin.Config.MaxHealth.TryGetValue(ev.NewRole, out int maxHp))
-                RunRestoreMaxHp(ev.Player, maxHp);
+                HandlerHelper.RunRestoreMaxHp(ev.Player, maxHp);
         }
 
         public void HandleDroppedItem(ItemDroppedEventArgs ev)
@@ -145,7 +149,7 @@ namespace SameThings
             {
                 return;
             }
-            if (Plugin.Config.GeneratorUnlockItems.Contains(ev.Player.Inventory.NetworkcurItem))
+            if (Plugin.Config.GeneratorUnlockItems.Contains(ev.Player.CurrentItem.id))
             {
                 ev.IsAllowed = true;
             }
@@ -164,7 +168,7 @@ namespace SameThings
             }
             if (++State.LuresCount < Plugin.Config.Scp106LureAmount)
             {
-                State.RunCoroutine(RunLureReload());
+                State.RunCoroutine(HandlerHelper.RunLureReload());
             }
         }
 
@@ -202,98 +206,6 @@ namespace SameThings
             }
         }
 
-        private IEnumerator<float> RunForceRestart()
-        {
-            yield return Timing.WaitForSeconds(Plugin.Config.ForceRestart);
-            Log.Info("Restarting round.");
-            PlayerManager.localPlayer.GetComponent<PlayerStats>().Roundrestart();
-            yield break;
-        }
-
-        private IEnumerator<float> RunAutoWarhead()
-        {
-            yield return Timing.WaitForSeconds(Plugin.Config.AutoWarheadTime);
-            if (Plugin.Config.AutoWarheadLock)
-            {
-                Exiled.API.Features.Warhead.IsLocked = true;
-            }
-            if (Exiled.API.Features.Warhead.IsDetonated || Exiled.API.Features.Warhead.IsInProgress)
-            {
-                Log.Info("Warhead is detonated or is in progress.");
-                yield break;
-            }
-            Log.Info("Activating Warhead.");
-            Exiled.API.Features.Warhead.Start();
-            if (!string.IsNullOrEmpty(Plugin.Config.AutoWarheadStartText))
-            {
-                Map.Broadcast(10, Plugin.Config.AutoWarheadStartText, Broadcast.BroadcastFlags.Normal);
-            }
-        }
-
-        private IEnumerator<float> RunAutoCleanup()
-        {
-            for (; ; )
-            {
-                foreach (Pickup pickup in State.Pickups.Keys)
-                {
-                    if (pickup == null)
-                    {
-                        State.Pickups.Remove(pickup);
-                    }
-                    else if (State.Pickups[pickup] <= Round.ElapsedTime.TotalSeconds)
-                    {
-                        NetworkServer.Destroy(pickup.gameObject);
-                    }
-                }
-                yield return Timing.WaitForSeconds(Plugin.Config.ItemAutoCleanup);
-            }
-        }
-
-        private IEnumerator<float> RunLureReload()
-        {
-            yield return Timing.WaitForSeconds(Plugin.Config.Scp106LureReload > 0 ? Plugin.Config.Scp106LureReload : 0);
-            Object.FindObjectOfType<LureSubjectContainer>().NetworkallowContain = false;
-            yield break;
-        }
-
-        private IEnumerator<float> RunSelfHealing()
-        {
-            for(; ; )
-            {
-                foreach (Exiled.API.Features.Player ply in Exiled.API.Features.Player.List)
-                {
-                    try
-                    {
-                        DoSelfHealing(ply);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"Error during SelfHealing in SameThings: {e}");
-                    }
-                    yield return Timing.WaitForSeconds(1f);
-                }
-            }
-        }
-
-        private void DoSelfHealing(Exiled.API.Features.Player ply)
-        {
-            if (ply.IsHost || !Plugin.Config.SelfHealingAmount.TryGetValue(ply.Role, out int amount) || !Plugin.Config.SelfHealingDuration.TryGetValue(ply.Role, out int duration))
-            {
-                return;
-            }
-            State.AfkTime[ply] = (State.PrevPos[ply] == ply.Position) ? (State.AfkTime[ply] + 1) : 0;
-            State.PrevPos[ply] = ply.Position;
-            if (State.AfkTime[ply] <= duration)
-            {
-                return;
-            }
-            ply.Health = ((ply.Health + amount) >= ply.MaxHealth) ? ply.MaxHealth : (ply.Health + amount);
-        }
-
-        private void RunRestoreMaxHp(Exiled.API.Features.Player player, int maxHp)
-        {
-            player.MaxHealth = maxHp;
-            player.Health = maxHp;
-        }
+        #endregion
     }
 }
