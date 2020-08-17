@@ -3,8 +3,11 @@ using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using MEC;
 using Mirror;
+using NorthwoodLib;
+using System;
 using System.Linq;
 using UnityEngine;
+
 using Object = UnityEngine.Object;
 using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;
@@ -93,7 +96,7 @@ namespace SameThings
             {
                 State.AfkTime[ev.Player] = 0;
                 State.PrevPos[ev.Player] = Vector3.zero;
-                if (!ev.Player.ReferenceHub.serverRoles.Staff && Plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s)))
+                if (!ev.Player.ReferenceHub.serverRoles.Staff && Plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s, StringComparison.OrdinalIgnoreCase)))
                 {
                     ev.Player.Disconnect(Plugin.Config.NicknameFilterReason);
                 }
