@@ -16,8 +16,7 @@ namespace SameThings
 {
     internal class EventHandlers
     {
-        internal SameThings plugin;
-        internal EventHandlers(SameThings plugin) => this.plugin = plugin;
+        internal SameThings Plugin => SameThings.Instance;
 
         internal void SubscribeAll()
         {
@@ -55,27 +54,27 @@ namespace SameThings
 
         public void HandleRoundStart()
         {
-            if (plugin.Config.AutoWarheadLock) 
+            if (Plugin.Config.AutoWarheadLock) 
                 Exiled.API.Features.Warhead.IsLocked = false;
-            if (plugin.Config.ForceRestart > -1) 
+            if (Plugin.Config.ForceRestart > -1) 
                 State.RunCoroutine(RunForceRestart());
-            if (plugin.Config.AutoWarheadTime > -1) 
+            if (Plugin.Config.AutoWarheadTime > -1) 
                 State.RunCoroutine(RunAutoWarhead());
-            if (plugin.Config.ItemAutoCleanup > -1) 
+            if (Plugin.Config.ItemAutoCleanup > -1) 
                 State.RunCoroutine(RunAutoCleanup());
-            if (plugin.Config.DecontaminationTime > -1) 
-                LightContainmentZoneDecontamination.DecontaminationController.Singleton.TimeOffset = (float)((11.7399997711182 - plugin.Config.DecontaminationTime) * 60.0);
-            if (plugin.Config.GeneratorDuration > -1)
+            if (Plugin.Config.DecontaminationTime > -1) 
+                LightContainmentZoneDecontamination.DecontaminationController.Singleton.TimeOffset = (float)((11.7399997711182 - Plugin.Config.DecontaminationTime) * 60.0);
+            if (Plugin.Config.GeneratorDuration > -1)
             {
                 foreach (Generator079 generator in Generator079.Generators)
                 {
-                    generator.startDuration = plugin.Config.GeneratorDuration;
-                    generator.SetTime(plugin.Config.GeneratorDuration);
+                    generator.startDuration = Plugin.Config.GeneratorDuration;
+                    generator.SetTime(Plugin.Config.GeneratorDuration);
                 }
             }
-            if (plugin.Config.SelfHealingDuration.Count > 0)
+            if (Plugin.Config.SelfHealingDuration.Count > 0)
                 State.RunCoroutine(RunSelfHealing());
-            if (plugin.Config.Scp106LureAmount > 0)
+            if (Plugin.Config.Scp106LureAmount > 0)
                 Object.FindObjectOfType<LureSubjectContainer>().SetState(true);
         }
 
@@ -90,21 +89,21 @@ namespace SameThings
             {
                 State.AfkTime[ev.Player] = 0;
                 State.PrevPos[ev.Player] = Vector3.zero;
-                if (!ev.Player.ReferenceHub.serverRoles.Staff && plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s)))
+                if (!ev.Player.ReferenceHub.serverRoles.Staff && Plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s)))
                 {
-                    ev.Player.Disconnect(plugin.Config.NicknameFilterReason);
+                    ev.Player.Disconnect(Plugin.Config.NicknameFilterReason);
                 }
             });
         }
 
         public void HandleTeslaTrigger(TriggeringTeslaEventArgs ev)
         {
-            ev.IsTriggerable = plugin.Config.TeslaTriggerableTeam.Contains(ev.Player.Team);
+            ev.IsTriggerable = Plugin.Config.TeslaTriggerableTeam.Contains(ev.Player.Team);
         }
 
         public void HandleWeaponShoot(ShootingEventArgs ev)
         {
-            if (plugin.Config.InfiniteAmmo)
+            if (Plugin.Config.InfiniteAmmo)
             {
                 ev.Shooter.SetWeaponAmmo(ev.Shooter.CurrentItem, (int)ev.Shooter.CurrentItem.durability + 1);
             }
@@ -112,41 +111,41 @@ namespace SameThings
 
         public void HandleSetClass(ChangingRoleEventArgs ev)
         {
-            if (plugin.Config.MaxHealth.TryGetValue(ev.NewRole, out int maxHp))
+            if (Plugin.Config.MaxHealth.TryGetValue(ev.NewRole, out int maxHp))
                 RunRestoreMaxHp(ev.Player, maxHp);
         }
 
         public void HandleDroppedItem(ItemDroppedEventArgs ev)
         {
-            if (plugin.Config.ItemAutoCleanup <= 0 || plugin.Config.ItemCleanupIgnore.Contains(ev.Pickup.ItemId))
+            if (Plugin.Config.ItemAutoCleanup <= 0 || Plugin.Config.ItemCleanupIgnore.Contains(ev.Pickup.ItemId))
             {
                 return;
             }
-            State.Pickups.Add(ev.Pickup, (int)Round.ElapsedTime.TotalSeconds + plugin.Config.ItemAutoCleanup);
+            State.Pickups.Add(ev.Pickup, (int)Round.ElapsedTime.TotalSeconds + Plugin.Config.ItemAutoCleanup);
         }
 
         public void HandleGeneratorEject(EjectingGeneratorTabletEventArgs ev)
         {
-            ev.IsAllowed = plugin.Config.GeneratorEjectTeams.Contains(ev.Player.Team);
+            ev.IsAllowed = Plugin.Config.GeneratorEjectTeams.Contains(ev.Player.Team);
         }
 
         public void HandleGeneratorInsert(InsertingGeneratorTabletEventArgs ev)
         {
-            ev.IsAllowed = plugin.Config.GeneratorInsertTeams.Contains(ev.Player.Team);
+            ev.IsAllowed = Plugin.Config.GeneratorInsertTeams.Contains(ev.Player.Team);
         }
 
         public void HandleGeneratorUnlock(UnlockingGeneratorEventArgs ev)
         {
-            if (!plugin.Config.GeneratorUnlockTeams.Contains(ev.Player.Team))
+            if (!Plugin.Config.GeneratorUnlockTeams.Contains(ev.Player.Team))
             {
                 ev.IsAllowed = false;
                 return;
             }
-            if (plugin.Config.GeneratorUnlockItems.Count == 0)
+            if (Plugin.Config.GeneratorUnlockItems.Count == 0)
             {
                 return;
             }
-            if (plugin.Config.GeneratorUnlockItems.Contains(ev.Player.Inventory.NetworkcurItem))
+            if (Plugin.Config.GeneratorUnlockItems.Contains(ev.Player.Inventory.NetworkcurItem))
             {
                 ev.IsAllowed = true;
             }
@@ -154,16 +153,16 @@ namespace SameThings
 
         public void HandleFemurEnter(EnteringFemurBreakerEventArgs ev)
         {
-            if (plugin.Config.Scp106LureAmount < 0)
+            if (Plugin.Config.Scp106LureAmount < 0)
             {
                 return;
             }
-            if (!plugin.Config.Scp106LureTeam.Contains(ev.Player.Team))
+            if (!Plugin.Config.Scp106LureTeam.Contains(ev.Player.Team))
             {
                 ev.IsAllowed = false;
                 return;
             }
-            if (++State.LuresCount < plugin.Config.Scp106LureAmount)
+            if (++State.LuresCount < Plugin.Config.Scp106LureAmount)
             {
                 State.RunCoroutine(RunLureReload());
             }
@@ -183,7 +182,7 @@ namespace SameThings
 
         public void HandleWarheadDetonation()
         {
-            if (!plugin.Config.WarheadCleanup)
+            if (!Plugin.Config.WarheadCleanup)
             {
                 return;
             }
@@ -205,7 +204,7 @@ namespace SameThings
 
         private IEnumerator<float> RunForceRestart()
         {
-            yield return Timing.WaitForSeconds(plugin.Config.ForceRestart);
+            yield return Timing.WaitForSeconds(Plugin.Config.ForceRestart);
             Log.Info("Restarting round.");
             PlayerManager.localPlayer.GetComponent<PlayerStats>().Roundrestart();
             yield break;
@@ -213,8 +212,8 @@ namespace SameThings
 
         private IEnumerator<float> RunAutoWarhead()
         {
-            yield return Timing.WaitForSeconds(plugin.Config.AutoWarheadTime);
-            if (plugin.Config.AutoWarheadLock)
+            yield return Timing.WaitForSeconds(Plugin.Config.AutoWarheadTime);
+            if (Plugin.Config.AutoWarheadLock)
             {
                 Exiled.API.Features.Warhead.IsLocked = true;
             }
@@ -225,9 +224,9 @@ namespace SameThings
             }
             Log.Info("Activating Warhead.");
             Exiled.API.Features.Warhead.Start();
-            if (!string.IsNullOrEmpty(plugin.Config.AutoWarheadStartText))
+            if (!string.IsNullOrEmpty(Plugin.Config.AutoWarheadStartText))
             {
-                Map.Broadcast(10, plugin.Config.AutoWarheadStartText, Broadcast.BroadcastFlags.Normal);
+                Map.Broadcast(10, Plugin.Config.AutoWarheadStartText, Broadcast.BroadcastFlags.Normal);
             }
         }
 
@@ -246,13 +245,13 @@ namespace SameThings
                         NetworkServer.Destroy(pickup.gameObject);
                     }
                 }
-                yield return Timing.WaitForSeconds(plugin.Config.ItemAutoCleanup);
+                yield return Timing.WaitForSeconds(Plugin.Config.ItemAutoCleanup);
             }
         }
 
         private IEnumerator<float> RunLureReload()
         {
-            yield return Timing.WaitForSeconds(plugin.Config.Scp106LureReload > 0 ? plugin.Config.Scp106LureReload : 0);
+            yield return Timing.WaitForSeconds(Plugin.Config.Scp106LureReload > 0 ? Plugin.Config.Scp106LureReload : 0);
             Object.FindObjectOfType<LureSubjectContainer>().NetworkallowContain = false;
             yield break;
         }
@@ -278,7 +277,7 @@ namespace SameThings
 
         private void DoSelfHealing(Exiled.API.Features.Player ply)
         {
-            if (ply.IsHost || !plugin.Config.SelfHealingAmount.TryGetValue(ply.Role, out int amount) || !plugin.Config.SelfHealingDuration.TryGetValue(ply.Role, out int duration))
+            if (ply.IsHost || !Plugin.Config.SelfHealingAmount.TryGetValue(ply.Role, out int amount) || !Plugin.Config.SelfHealingDuration.TryGetValue(ply.Role, out int duration))
             {
                 return;
             }
