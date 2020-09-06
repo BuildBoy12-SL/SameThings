@@ -155,14 +155,11 @@ namespace SameThings
                 ev.IsAllowed = false;
                 return;
             }
-            if (Plugin.Config.GeneratorUnlockItems.Count == 0)
-            {
+            if (Plugin.Config.GeneratorUnlockItems.Length == 0)
                 return;
-            }
+
             if (Plugin.Config.GeneratorUnlockItems.Contains(ev.Player.CurrentItem.id))
-            {
                 ev.IsAllowed = true;
-            }
         }
 
         public void HandleFemurEnter(EnteringFemurBreakerEventArgs ev)
