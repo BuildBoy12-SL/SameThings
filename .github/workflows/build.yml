@@ -32,9 +32,9 @@ jobs:
       shell: pwsh
       run: |
         if ('${{ GITHUB.REF }}' -Match 'dev$') {
-           dotnet build -p:Configuration=Release -p:BuildNumber=${{ GITHUB.RUN_NUMBER }}
+           dotnet build -p:DeployToServer=false -p:Configuration=Release -p:BuildNumber=${{ GITHUB.RUN_NUMBER }}
         } else {
-           dotnet build -p:Configuration=Release
+           dotnet build -p:DeployToServer=false -p:Configuration=Release
         }
       env:
         EXILED_REFERENCES: ${{ github.workspace }}/References

@@ -6,15 +6,6 @@ namespace SameThings
 {
     public sealed class SamethingsConfig : IConfig
     {
-        public SamethingsConfig()
-        {
-            for (var z = 0; z < CharacterClassManager._staticClasses.Length; z++)
-            {
-                var @class = CharacterClassManager._staticClasses[z];
-                MaxHealth[@class.roleId] = @class.maxHP;
-            }
-        }
-
         #region Default
 
         public bool IsEnabled { get; set; } = true;
@@ -150,7 +141,27 @@ namespace SameThings
         };
 
         [Description("To ignore a role, remove its entry. Sets the roles maximum health.")]
-        public Dictionary<RoleType, int> MaxHealth { get; set; } = new Dictionary<RoleType, int>();
+        public Dictionary<RoleType, int> MaxHealth { get; set; } = new Dictionary<RoleType, int>
+        {
+            [RoleType.Scp173] = 3200,
+            [RoleType.ClassD] = 100,
+            [RoleType.Spectator] = 100,
+            [RoleType.Scp106] = 650,
+            [RoleType.NtfScientist] = 120,
+            [RoleType.Scp049] = 1700,
+            [RoleType.Scientist] = 100,
+            [RoleType.Scp079] = 100_000,
+            [RoleType.ChaosInsurgency] = 120,
+            [RoleType.Scp096] = 500,
+            [RoleType.Scp0492] = 300,
+            [RoleType.NtfLieutenant] = 120,
+            [RoleType.NtfCommander] = 150,
+            [RoleType.NtfCadet] = 100,
+            [RoleType.Tutorial] = 100,
+            [RoleType.FacilityGuard] = 100,
+            [RoleType.Scp93953] = 2200,
+            [RoleType.Scp93989] = 2200
+        };
 
         [Description("Amount of time a role can stand still before their natural regen cancels.")]
         public Dictionary<RoleType, int> SelfHealingDuration { get; set; } = new Dictionary<RoleType, int>
