@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace SameThings
 {
-    public class SameThings : Plugin<Config>
+    public sealed class SameThings : Plugin<SamethingsConfig>
     {
         internal static SameThings Instance;
 

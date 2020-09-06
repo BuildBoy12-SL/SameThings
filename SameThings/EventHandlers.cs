@@ -15,7 +15,7 @@ using Warhead = Exiled.Events.Handlers.Warhead;
 
 namespace SameThings
 {
-    internal class EventHandlers
+    internal sealed class EventHandlers
     {
         internal SameThings Plugin => SameThings.Instance;
 
@@ -24,7 +24,7 @@ namespace SameThings
         internal void SubscribeAll()
         {
             Server.RoundStarted += HandleRoundStart;
-            Server.RoundEnded += HandleRoundEnd;
+            Server.RestartingRound += HandleRoundRestaring;
             Player.Joined += HandlePlayerJoin;
             Player.TriggeringTesla += HandleTeslaTrigger;
             Player.Shooting += HandleWeaponShoot;
@@ -41,7 +41,7 @@ namespace SameThings
         internal void UnSubscribeAll()
         {
             Server.RoundStarted -= HandleRoundStart;
-            Server.RoundEnded -= HandleRoundEnd;
+            Server.RestartingRound -= HandleRoundRestaring;
             Player.Joined -= HandlePlayerJoin;
             Player.TriggeringTesla -= HandleTeslaTrigger;
             Player.Shooting -= HandleWeaponShoot;
@@ -63,14 +63,19 @@ namespace SameThings
         {
             if (Plugin.Config.AutoWarheadLock)
                 Exiled.API.Features.Warhead.IsLocked = false;
+
             if (Plugin.Config.ForceRestart > -1)
                 State.RunCoroutine(HandlerHelper.RunForceRestart());
+
             if (Plugin.Config.AutoWarheadTime > -1)
                 State.RunCoroutine(HandlerHelper.RunAutoWarhead());
+
             if (Plugin.Config.ItemAutoCleanup > -1)
                 State.RunCoroutine(HandlerHelper.RunAutoCleanup());
+
             if (Plugin.Config.DecontaminationTime > -1)
                 LightContainmentZoneDecontamination.DecontaminationController.Singleton.TimeOffset = (float)((11.7399997711182 - Plugin.Config.DecontaminationTime) * 60.0);
+
             if (Plugin.Config.GeneratorDuration > -1)
             {
                 foreach (Generator079 generator in Generator079.Generators)
@@ -79,13 +84,15 @@ namespace SameThings
                     generator.SetTime(Plugin.Config.GeneratorDuration);
                 }
             }
+
             if (Plugin.Config.SelfHealingDuration.Count > 0)
                 State.RunCoroutine(HandlerHelper.RunSelfHealing());
+
             if (Plugin.Config.Scp106LureAmount > 0)
                 Object.FindObjectOfType<LureSubjectContainer>().SetState(true);
         }
 
-        public void HandleRoundEnd(RoundEndedEventArgs _)
+        public void HandleRoundRestaring()
         {
             State.Refresh();
         }
@@ -94,9 +101,11 @@ namespace SameThings
         {
             Timing.CallDelayed(0.25f, () =>
             {
-                State.AfkTime[ev.Player] = 0;
-                State.PrevPos[ev.Player] = Vector3.zero;
-                if (!ev.Player.ReferenceHub.serverRoles.Staff && Plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s, StringComparison.OrdinalIgnoreCase)))
+                State._afkTime[ev.Player] = 0;
+                State._prevPos[ev.Player] = Vector3.zero;
+
+                if (!ev.Player.ReferenceHub.serverRoles.Staff
+                && Plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s, StringComparison.OrdinalIgnoreCase)))
                 {
                     ev.Player.Disconnect(Plugin.Config.NicknameFilterReason);
                 }
@@ -111,9 +120,7 @@ namespace SameThings
         public void HandleWeaponShoot(ShootingEventArgs ev)
         {
             if (Plugin.Config.InfiniteAmmo)
-            {
                 ev.Shooter.SetWeaponAmmo(ev.Shooter.CurrentItem, (int)ev.Shooter.CurrentItem.durability + 1);
-            }
         }
 
         public void HandleSetClass(ChangingRoleEventArgs ev)
@@ -128,7 +135,7 @@ namespace SameThings
             {
                 return;
             }
-            State.Pickups.Add(ev.Pickup, (int)Round.ElapsedTime.TotalSeconds + Plugin.Config.ItemAutoCleanup);
+            State._pickups.Add(ev.Pickup, (int)Round.ElapsedTime.TotalSeconds + Plugin.Config.ItemAutoCleanup);
         }
 
         public void HandleGeneratorEject(EjectingGeneratorTabletEventArgs ev)
@@ -169,7 +176,7 @@ namespace SameThings
                 ev.IsAllowed = false;
                 return;
             }
-            if (++State.LuresCount < Plugin.Config.Scp106LureAmount)
+            if (++State._luresCount < Plugin.Config.Scp106LureAmount)
             {
                 State.RunCoroutine(HandlerHelper.RunLureReload());
             }
@@ -177,13 +184,13 @@ namespace SameThings
 
         public void HandlePlayerLeave(LeftEventArgs ev)
         {
-            if (State.PrevPos.ContainsKey(ev.Player))
+            if (State._prevPos.ContainsKey(ev.Player))
             {
-                State.PrevPos.Remove(ev.Player);
+                State._prevPos.Remove(ev.Player);
             }
-            if (State.AfkTime.ContainsKey(ev.Player))
+            if (State._afkTime.ContainsKey(ev.Player))
             {
-                State.AfkTime.Remove(ev.Player);
+                State._afkTime.Remove(ev.Player);
             }
         }
 

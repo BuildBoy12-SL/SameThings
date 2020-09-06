@@ -22,39 +22,37 @@ namespace SameThings
         public static IEnumerator<float> RunAutoWarhead()
         {
             yield return Timing.WaitForSeconds(Plugin.Config.AutoWarheadTime);
+
             if (Plugin.Config.AutoWarheadLock)
-            {
                 Warhead.IsLocked = true;
-            }
+
             if (Warhead.IsDetonated || Warhead.IsInProgress)
             {
                 Log.Info("Warhead is detonated or is in progress.");
                 yield break;
             }
+
             Log.Info("Activating Warhead.");
             Warhead.Start();
+
             if (!string.IsNullOrEmpty(Plugin.Config.AutoWarheadStartText))
-            {
                 Map.Broadcast(10, Plugin.Config.AutoWarheadStartText, Broadcast.BroadcastFlags.Normal);
-            }
         }
 
         public static IEnumerator<float> RunAutoCleanup()
         {
             while (true)
             {
-                foreach (Pickup pickup in State.Pickups.Keys)
+                foreach (Pickup pickup in State._pickups.Keys)
                 {
                     if (pickup == null)
-                    {
-                        State.Pickups.Remove(pickup);
-                    }
-                    else if (State.Pickups[pickup] <= Round.ElapsedTime.TotalSeconds)
-                    {
+                        State._pickups.Remove(pickup);
+                    else if (State._pickups[pickup] <= Round.ElapsedTime.TotalSeconds)
                         NetworkServer.Destroy(pickup.gameObject);
-                    }
                 }
-                yield return Timing.WaitForSeconds(Plugin.Config.ItemAutoCleanup);
+
+                for (var z = 0; z < Plugin.Config.ItemAutoCleanup * 50; z++)
+                    yield return 0f;
             }
         }
 
@@ -85,16 +83,19 @@ namespace SameThings
 
         private static void DoSelfHealing(Exiled.API.Features.Player ply)
         {
-            if (ply.IsHost || !Plugin.Config.SelfHealingAmount.TryGetValue(ply.Role, out int amount) || !Plugin.Config.SelfHealingDuration.TryGetValue(ply.Role, out int duration))
+            if (ply.IsHost
+                || !Plugin.Config.SelfHealingAmount.TryGetValue(ply.Role, out int amount)
+                || !Plugin.Config.SelfHealingDuration.TryGetValue(ply.Role, out int duration))
             {
                 return;
             }
-            State.AfkTime[ply] = (State.PrevPos[ply] == ply.Position) ? (State.AfkTime[ply] + 1) : 0;
-            State.PrevPos[ply] = ply.Position;
-            if (State.AfkTime[ply] <= duration)
-            {
+
+            State._afkTime[ply] = (State._prevPos[ply] == ply.Position) ? (State._afkTime[ply] + 1) : 0;
+            State._prevPos[ply] = ply.Position;
+
+            if (State._afkTime[ply] <= duration)
                 return;
-            }
+
             ply.Health = ((ply.Health + amount) >= ply.MaxHealth) ? ply.MaxHealth : (ply.Health + amount);
         }
 
@@ -103,6 +104,5 @@ namespace SameThings
             player.MaxHealth = maxHp;
             player.Health = maxHp;
         }
-
     }
 }
