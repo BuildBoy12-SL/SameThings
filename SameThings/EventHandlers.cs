@@ -113,7 +113,7 @@ namespace SameThings
                 if (!ev.Player.ReferenceHub.serverRoles.Staff
                 && Plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s, StringComparison.OrdinalIgnoreCase)))
                 {
-                    ev.Player.Disconnect(Plugin.Config.NicknameFilterReason);
+                    ev.Player.Disconnect($"{Plugin.Config.NicknameFilterReason} [Disconnect by SameThings Exiled Plugin]");
                 }
             });
         }
