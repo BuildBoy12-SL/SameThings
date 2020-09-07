@@ -27,7 +27,8 @@ namespace SameThings
 
         public static IEnumerator<float> RunAutoWarhead()
         {
-            yield return Timing.WaitForSeconds(Plugin.Config.AutoWarheadTime);
+            for (var z = 0; z < 50 * Plugin.Config.AutoWarheadTime; z++)
+                yield return 0f;
 
             if (Plugin.Config.AutoWarheadLock)
                 Warhead.IsLocked = true;
@@ -41,8 +42,8 @@ namespace SameThings
             Log.Info("Activating Warhead.");
             Warhead.Start();
 
-            if (!string.IsNullOrEmpty(Plugin.Config.AutoWarheadStartText))
-                Map.Broadcast(10, Plugin.Config.AutoWarheadStartText, Broadcast.BroadcastFlags.Normal);
+            if (!string.IsNullOrEmpty(Plugin.Config.AutoWarheadStartText) && Plugin.Config.AutoWarheadStartTextTime != 0)
+                Map.Broadcast(Plugin.Config.AutoWarheadStartTextTime, Plugin.Config.AutoWarheadStartText, Broadcast.BroadcastFlags.Normal);
         }
 
         public static IEnumerator<float> RunAutoCleanup()
