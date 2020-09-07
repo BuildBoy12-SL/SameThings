@@ -14,9 +14,15 @@ namespace SameThings
 
         public static IEnumerator<float> RunForceRestart()
         {
-            yield return Timing.WaitForSeconds(Plugin.Config.ForceRestart);
-            Log.Info("Restarting round.");
-            PlayerManager.localPlayer.GetComponent<PlayerStats>().Roundrestart();
+            for (var z = 0; z < 50 * Plugin.Config.ForceRestart; z++)
+                yield return 0f;
+
+            Log.Info($"Force restarting round after timeout in {Plugin.Config.ForceRestart}.");
+
+            var pStats = Server.Host.ReferenceHub.GetComponent<RoundSummary>();
+            pStats._roundEnded = true;
+            RoundSummary.RoundLock = false;
+            pStats._keepRoundOnOne = false;
         }
 
         public static IEnumerator<float> RunAutoWarhead()
