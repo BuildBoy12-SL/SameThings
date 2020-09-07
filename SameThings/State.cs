@@ -7,31 +7,31 @@ namespace SameThings
 {
     internal static class State
     {
-        internal static readonly List<BreakableWindow> _breakableWindows = new List<BreakableWindow>();
-        internal static readonly List<CoroutineHandle> _coroutines = new List<CoroutineHandle>(10);
+        internal static readonly List<BreakableWindow> BreakableWindows = new List<BreakableWindow>();
+        internal static readonly List<CoroutineHandle> Coroutines = new List<CoroutineHandle>(10);
 
-        internal static readonly Dictionary<Pickup, int> _pickups = new Dictionary<Pickup, int>(150);
-        internal static readonly Dictionary<Player, Vector3> _prevPos = new Dictionary<Player, Vector3>(20);
-        internal static readonly Dictionary<Player, int> _afkTime = new Dictionary<Player, int>(20);
+        internal static readonly Queue<Pickup> Pickups = new Queue<Pickup>(150);
+        internal static readonly Dictionary<Player, Vector3> PrevPos = new Dictionary<Player, Vector3>(20);
+        internal static readonly Dictionary<Player, int> AfkTime = new Dictionary<Player, int>(20);
 
         internal static int _luresCount;
 
         internal static void Refresh()
         {
-            Timing.KillCoroutines(_coroutines);
+            Timing.KillCoroutines(Coroutines);
 
-            _coroutines.Clear();
-            _pickups.Clear();
-            _prevPos.Clear();
-            _afkTime.Clear();
-            _breakableWindows.Clear();
+            Coroutines.Clear();
+            Pickups.Clear();
+            PrevPos.Clear();
+            AfkTime.Clear();
+            BreakableWindows.Clear();
 
             _luresCount = 0;
         }
 
         internal static void RunCoroutine(IEnumerator<float> coroutine)
         {
-            _coroutines.Add(Timing.RunCoroutine(coroutine));
+            Coroutines.Add(Timing.RunCoroutine(coroutine));
         }
     }
 }

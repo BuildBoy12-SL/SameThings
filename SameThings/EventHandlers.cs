@@ -25,15 +25,18 @@ namespace SameThings
         {
             Server.RoundStarted += HandleRoundStart;
             Server.RestartingRound += HandleRoundRestaring;
+
             Player.Joined += HandlePlayerJoin;
             Player.TriggeringTesla += HandleTeslaTrigger;
             Player.Shooting += HandleWeaponShoot;
             Player.ChangingRole += HandleSetClass;
             Player.ItemDropped += HandleDroppedItem;
+
             Player.EjectingGeneratorTablet += HandleGeneratorEject;
             Player.InsertingGeneratorTablet += HandleGeneratorInsert;
             Player.UnlockingGenerator += HandleGeneratorUnlock;
             Player.EnteringFemurBreaker += HandleFemurEnter;
+
             Player.Left += HandlePlayerLeave;
             Warhead.Detonated += HandleWarheadDetonation;
         }
@@ -42,15 +45,18 @@ namespace SameThings
         {
             Server.RoundStarted -= HandleRoundStart;
             Server.RestartingRound -= HandleRoundRestaring;
+
             Player.Joined -= HandlePlayerJoin;
             Player.TriggeringTesla -= HandleTeslaTrigger;
             Player.Shooting -= HandleWeaponShoot;
             Player.ChangingRole -= HandleSetClass;
             Player.ItemDropped -= HandleDroppedItem;
+
             Player.EjectingGeneratorTablet -= HandleGeneratorEject;
             Player.InsertingGeneratorTablet -= HandleGeneratorInsert;
             Player.UnlockingGenerator -= HandleGeneratorUnlock;
             Player.EnteringFemurBreaker -= HandleFemurEnter;
+
             Player.Left -= HandlePlayerLeave;
             Warhead.Detonated -= HandleWarheadDetonation;
         }
@@ -70,7 +76,7 @@ namespace SameThings
             if (Plugin.Config.AutoWarheadTime > -1)
                 State.RunCoroutine(HandlerHelper.RunAutoWarhead());
 
-            if (Plugin.Config.ItemAutoCleanup > -1)
+            if (Plugin.Config.ItemAutoCleanup != 0)
                 State.RunCoroutine(HandlerHelper.RunAutoCleanup());
 
             if (Plugin.Config.DecontaminationTime > -1)
@@ -101,8 +107,8 @@ namespace SameThings
         {
             Timing.CallDelayed(0.25f, () =>
             {
-                State._afkTime[ev.Player] = 0;
-                State._prevPos[ev.Player] = Vector3.zero;
+                State.AfkTime[ev.Player] = 0;
+                State.PrevPos[ev.Player] = Vector3.zero;
 
                 if (!ev.Player.ReferenceHub.serverRoles.Staff
                 && Plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s, StringComparison.OrdinalIgnoreCase)))
@@ -131,11 +137,13 @@ namespace SameThings
 
         public void HandleDroppedItem(ItemDroppedEventArgs ev)
         {
-            if (Plugin.Config.ItemAutoCleanup <= 0 || Plugin.Config.ItemCleanupIgnore.Contains(ev.Pickup.ItemId))
+            if (Plugin.Config.ItemAutoCleanup == 0
+                || Plugin.Config.ItemCleanupIgnore.Contains(ev.Pickup.ItemId))
             {
                 return;
             }
-            State._pickups.Add(ev.Pickup, (int)Round.ElapsedTime.TotalSeconds + Plugin.Config.ItemAutoCleanup);
+
+            State.Pickups.Enqueue(ev.Pickup);
         }
 
         public void HandleGeneratorEject(EjectingGeneratorTabletEventArgs ev)
@@ -181,13 +189,13 @@ namespace SameThings
 
         public void HandlePlayerLeave(LeftEventArgs ev)
         {
-            if (State._prevPos.ContainsKey(ev.Player))
+            if (State.PrevPos.ContainsKey(ev.Player))
             {
-                State._prevPos.Remove(ev.Player);
+                State.PrevPos.Remove(ev.Player);
             }
-            if (State._afkTime.ContainsKey(ev.Player))
+            if (State.AfkTime.ContainsKey(ev.Player))
             {
-                State._afkTime.Remove(ev.Player);
+                State.AfkTime.Remove(ev.Player);
             }
         }
 

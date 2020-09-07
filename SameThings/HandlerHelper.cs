@@ -50,13 +50,15 @@ namespace SameThings
         {
             while (true)
             {
-                foreach (Pickup pickup in State._pickups.Keys)
+                var skipWaiting = false;
+                if (State.Pickups.TryDequeue(out var pickup))
                 {
-                    if (pickup == null)
-                        State._pickups.Remove(pickup);
-                    else if (State._pickups[pickup] <= Round.ElapsedTime.TotalSeconds)
+                    if (!(skipWaiting = pickup == null))
                         NetworkServer.Destroy(pickup.gameObject);
                 }
+
+                if (skipWaiting)
+                    continue;
 
                 for (var z = 0; z < Plugin.Config.ItemAutoCleanup * 50; z++)
                     yield return 0f;
@@ -97,10 +99,10 @@ namespace SameThings
                 return;
             }
 
-            State._afkTime[ply] = (State._prevPos[ply] == ply.Position) ? (State._afkTime[ply] + 1) : 0;
-            State._prevPos[ply] = ply.Position;
+            State.AfkTime[ply] = (State.PrevPos[ply] == ply.Position) ? (State.AfkTime[ply] + 1) : 0;
+            State.PrevPos[ply] = ply.Position;
 
-            if (State._afkTime[ply] <= duration)
+            if (State.AfkTime[ply] <= duration)
                 return;
 
             ply.Health = ((ply.Health + amount) >= ply.MaxHealth) ? ply.MaxHealth : (ply.Health + amount);

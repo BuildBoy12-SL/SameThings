@@ -57,8 +57,8 @@ namespace SameThings
 
         #region Item cleanup
 
-        [Description("Cleans up items dropped by players after this amount of time. Values below 1 disable this.")]
-        public int ItemAutoCleanup { get; set; } = 0;
+        [Description("Cleans up items dropped by players after this amount of time. A zero value will disable this.")]
+        public uint ItemAutoCleanup { get; set; } = 0;
 
         [Description("Ignores these items during cleanup.")]
         public ItemType[] ItemCleanupIgnore { get; set; } =
