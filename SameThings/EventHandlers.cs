@@ -181,7 +181,7 @@ namespace SameThings
                 ev.IsAllowed = false;
                 return;
             }
-            if (++State._luresCount < Plugin.Config.Scp106LureAmount)
+            if (++State.LuresCount < Plugin.Config.Scp106LureAmount)
             {
                 State.RunCoroutine(HandlerHelper.RunLureReload());
             }

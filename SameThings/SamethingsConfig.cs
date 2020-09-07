@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace SameThings
 {
-    public sealed class SamethingsConfig : IConfig
+    public sealed class SameThingsConfig : IConfig
     {
         #region Default
 

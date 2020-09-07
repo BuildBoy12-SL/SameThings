@@ -14,7 +14,7 @@ namespace SameThings
         internal static readonly Dictionary<Player, Vector3> PrevPos = new Dictionary<Player, Vector3>(20);
         internal static readonly Dictionary<Player, int> AfkTime = new Dictionary<Player, int>(20);
 
-        internal static int _luresCount;
+        internal static int LuresCount;
 
         internal static void Refresh()
         {
@@ -26,7 +26,7 @@ namespace SameThings
             AfkTime.Clear();
             BreakableWindows.Clear();
 
-            _luresCount = 0;
+            LuresCount = 0;
         }
 
         internal static void RunCoroutine(IEnumerator<float> coroutine)
