@@ -67,14 +67,8 @@ namespace SameThings
 
         public void HandleRoundStart()
         {
-            if (Plugin.Config.AutoWarheadLock)
-                Exiled.API.Features.Warhead.IsLocked = false;
-
             if (Plugin.Config.ForceRestart > -1)
                 State.RunCoroutine(HandlerHelper.RunForceRestart());
-
-            if (Plugin.Config.AutoWarheadTime > -1)
-                State.RunCoroutine(HandlerHelper.RunAutoWarhead());
 
             if (Plugin.Config.ItemAutoCleanup != 0)
                 State.RunCoroutine(HandlerHelper.RunAutoCleanup());

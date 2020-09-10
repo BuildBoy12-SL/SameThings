@@ -25,6 +25,7 @@ namespace SameThings
             pStats._keepRoundOnOne = false;
         }
 
+        /*
         public static IEnumerator<float> RunAutoWarhead()
         {
             for (var z = 0; z < 50 * Plugin.Config.AutoWarheadTime; z++)
@@ -45,6 +46,7 @@ namespace SameThings
             if (!string.IsNullOrEmpty(Plugin.Config.AutoWarheadStartText) && Plugin.Config.AutoWarheadStartTextTime != 0)
                 Map.Broadcast(Plugin.Config.AutoWarheadStartTextTime, Plugin.Config.AutoWarheadStartText, Broadcast.BroadcastFlags.Normal);
         }
+        */
 
         public static IEnumerator<float> RunAutoCleanup()
         {

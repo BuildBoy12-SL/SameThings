@@ -33,14 +33,8 @@ namespace SameThings
 
         #region Warhead
 
-        // Backward compatibility to 'auto_warhead_start_lock'
-        [Description("If the AutoWarhead will prevent disabling.")]
-        public bool AutoWarheadLock { get; set; } = false;
-
-        // Backward compatibility to 'auto_warhead_start'
-        [Description("Amount of time [in seconds] before the warhead will automatically start. Values below 0 disable this.")]
-        public int AutoWarheadTime { get; set; } = -1;
-
+        // Not yet implemented, pending reorganized or something else.
+        /*
         // No backward compatibility
         [Description("Text to be broadcasted when the AutoWarhead starts.")]
         public string AutoWarheadStartText { get; set; }
@@ -48,6 +42,7 @@ namespace SameThings
         // No backward compatibility
         [Description("Duration of the broadcast in seconds.")]
         public ushort AutoWarheadStartTextTime { get; set; } = 10;
+        */
 
         // Backward compatibility to 'nuke_cleanup'
         [Description("If all items and ragdolls in the facility should be removed after detonation.")]
