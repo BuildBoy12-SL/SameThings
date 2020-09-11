@@ -90,6 +90,8 @@ namespace SameThings
 
             if (Plugin.Config.Scp106LureAmount > 0)
                 Object.FindObjectOfType<LureSubjectContainer>().SetState(true);
+
+            HandlerHelper.SetupWindowsHealth();
         }
 
         public void HandleRoundRestaring()

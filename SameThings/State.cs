@@ -7,7 +7,6 @@ namespace SameThings
 {
     internal static class State
     {
-        internal static readonly List<BreakableWindow> BreakableWindows = new List<BreakableWindow>();
         internal static readonly List<CoroutineHandle> Coroutines = new List<CoroutineHandle>(10);
 
         internal static readonly Queue<Pickup> Pickups = new Queue<Pickup>(150);
@@ -24,7 +23,6 @@ namespace SameThings
             Pickups.Clear();
             PrevPos.Clear();
             AfkTime.Clear();
-            BreakableWindows.Clear();
 
             LuresCount = 0;
         }

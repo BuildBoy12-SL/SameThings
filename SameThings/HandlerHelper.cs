@@ -115,5 +115,20 @@ namespace SameThings
             player.MaxHealth = maxHp;
             player.Health = maxHp;
         }
+
+        public static void SetupWindowsHealth()
+        {
+            var cfg = SameThings.Instance.Config;
+            if (cfg.WindowHealth == 0)
+                return;
+
+            var windows = Object.FindObjectsOfType<BreakableWindow>();
+            for (var z = 0; z < windows.Length; z++)
+            {
+                var window = windows[z];
+
+                window.health = cfg.WindowHealth;
+            }
+        }
     }
 }

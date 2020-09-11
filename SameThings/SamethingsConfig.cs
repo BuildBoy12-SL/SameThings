@@ -15,8 +15,8 @@ namespace SameThings
         #region Environment
 
         // Backward compatibility to 'window_health'
-        [Description("Sets the health of breakable windows. Values below 1 disable this.")]
-        public int WindowHealth { get; set; } = 0;
+        [Description("Sets the health of breakable windows. A zero value will disable this.")]
+        public uint WindowHealth { get; set; } = 0;
 
         // Backward compatibility to 'unlimited_radio_battery'
         [Description("If radios should have unlimited charge.")]
