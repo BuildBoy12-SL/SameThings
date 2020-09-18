@@ -87,8 +87,9 @@ namespace SameThings
                     {
                         Log.Error($"Error during SelfHealing in SameThings: {e}");
                     }
-                    yield return Timing.WaitForSeconds(1f);
                 }
+
+                yield return Timing.WaitForSeconds(1f);
             }
         }
 
