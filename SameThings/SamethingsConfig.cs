@@ -50,6 +50,13 @@ namespace SameThings
 
         #endregion
 
+        #region Intercom
+
+        [Description("Custom intercom content. If there's no specific content, then the default client content is used.")]
+        public Dictionary<Intercom.State, string> CustomIntercomContent { get; set; } = new Dictionary<Intercom.State, string>();
+
+        #endregion
+
         #region Item cleanup
 
         [Description("Cleans up items dropped by players after this amount of time. A zero value will disable this.")]

@@ -1,5 +1,4 @@
 using Exiled.API.Extensions;
-using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using MEC;
 using Mirror;
@@ -185,14 +184,8 @@ namespace SameThings
 
         public void HandlePlayerLeave(LeftEventArgs ev)
         {
-            if (State.PrevPos.ContainsKey(ev.Player))
-            {
-                State.PrevPos.Remove(ev.Player);
-            }
-            if (State.AfkTime.ContainsKey(ev.Player))
-            {
-                State.AfkTime.Remove(ev.Player);
-            }
+            State.PrevPos.Remove(ev.Player);
+            State.AfkTime.Remove(ev.Player);
         }
 
         public void HandleWarheadDetonation()
