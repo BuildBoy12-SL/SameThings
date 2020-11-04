@@ -17,7 +17,8 @@ namespace SameThings
 
         internal static void Refresh()
         {
-            Timing.KillCoroutines(Coroutines);
+            for (var z = 0; z < Coroutines.Count; z++)
+                Timing.KillCoroutines(Coroutines[z]);
 
             Coroutines.Clear();
             Pickups.Clear();
