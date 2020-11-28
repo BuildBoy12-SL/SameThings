@@ -3,6 +3,7 @@ using MEC;
 using Mirror;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 using Object = UnityEngine.Object;
 
@@ -69,7 +70,7 @@ namespace SameThings
 
         public static IEnumerator<float> RunLureReload()
         {
-            yield return Timing.WaitForSeconds(Plugin.Config.Scp106LureReload > 0 ? Plugin.Config.Scp106LureReload : 0);
+            yield return Timing.WaitForSeconds(Mathf.Min(Plugin.Config.Scp106LureReload, 0));
             Object.FindObjectOfType<LureSubjectContainer>().NetworkallowContain = false;
         }
 

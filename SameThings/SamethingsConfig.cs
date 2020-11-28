@@ -71,6 +71,19 @@ namespace SameThings
 
         #endregion
 
+        #region SCP-106
+
+        [Description("How many sacrifices it takes to lure 106. Values below 1 set the recontainer to always active.")]
+        public int Scp106LureAmount { get; set; } = 0;
+
+        [Description("Amount of time before another sacrifice can be made.")]
+        public int Scp106LureReload { get; set; } = 0;
+
+        [Description("Teams that can enter the femur breaker.")]
+        public Team[] Scp106LureTeam { get; set; } = { Team.MTF, Team.CHI, Team.RSC, Team.CDP };
+
+        #endregion
+
         #region Misc
 
         [Description("Restarts the round after this many seconds. Values below 0 disable this.")]
@@ -84,15 +97,6 @@ namespace SameThings
 
         [Description("Amount of time it takes for a generator to activate. Values below 0 disable this.")]
         public int GeneratorDuration { get; set; } = -1;
-
-        [Description("How many sacrifices it takes to lure 106. Values below 1 set the recontainer to always active.")]
-        public int Scp106LureAmount { get; set; } = 0;
-
-        [Description("Amount of time before another sacrifice can be made.")]
-        public int Scp106LureReload { get; set; } = 0;
-
-        [Description("Teams that can enter the femur breaker.")]
-        public Team[] Scp106LureTeam { get; set; } = { Team.MTF, Team.CHI, Team.RSC, Team.CDP };
 
         [Description("Cancels a player connection if they have any of these in their name.")]
         public string[] NicknameFilter { get; set; } = { ".com", ".org" };

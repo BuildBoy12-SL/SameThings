@@ -87,7 +87,7 @@ namespace SameThings
             if (Plugin.Config.SelfHealingDuration.Count > 0)
                 State.RunCoroutine(HandlerHelper.RunSelfHealing());
 
-            if (Plugin.Config.Scp106LureAmount > 0)
+            if (Plugin.Config.Scp106LureAmount < 1)
                 Object.FindObjectOfType<LureSubjectContainer>().SetState(true);
 
             HandlerHelper.SetupWindowsHealth();
@@ -165,22 +165,37 @@ namespace SameThings
                 ev.IsAllowed = true;
         }
 
+        #region SCP-106
+
         public void HandleFemurEnter(EnteringFemurBreakerEventArgs ev)
         {
-            if (Plugin.Config.Scp106LureAmount < 0)
-            {
+            // That means the femur breaker is always open
+            if (Plugin.Config.Scp106LureAmount < 1)
                 return;
-            }
+
+            // Allowed team check
             if (!Plugin.Config.Scp106LureTeam.Contains(ev.Player.Team))
             {
                 ev.IsAllowed = false;
                 return;
             }
+
             if (++State.LuresCount < Plugin.Config.Scp106LureAmount)
             {
                 State.RunCoroutine(HandlerHelper.RunLureReload());
             }
         }
+
+        public void HandleContain106(ContainingEventArgs ev)
+        {
+            // That means it's disabled
+            if (Plugin.Config.Scp106LureAmount < 1)
+                return;
+
+            ev.IsAllowed = State.LuresCount > Plugin.Config.Scp106LureAmount;
+        }
+
+        #endregion
 
         public void HandlePlayerLeave(LeftEventArgs ev)
         {
