@@ -36,7 +36,7 @@ namespace SameThings.Patches
             {
                 int num = Mathf.CeilToInt(__instance.remainingCooldown);
                 //IntercomState = State.Restarting;
-                __instance.NetworkIntercomTime = (ushort)((num >= 0) ? ((ushort)num) : 0);
+                __instance.NetworkIntercomTime = (ushort) ((num >= 0) ? ((ushort) num) : 0);
                 SetContent(__instance, Intercom.State.Restarting);
             }
             else if (__instance.Networkspeaker != null)
@@ -50,7 +50,7 @@ namespace SameThings.Patches
                 {
                     int num2 = Mathf.CeilToInt(__instance.speechRemainingTime);
                     //IntercomState = State.Transmitting;
-                    __instance.NetworkIntercomTime = (ushort)((num2 >= 0) ? ((ushort)num2) : 0);
+                    __instance.NetworkIntercomTime = (ushort) ((num2 >= 0) ? ((ushort) num2) : 0);
                     SetContent(__instance, Intercom.State.Transmitting);
                 }
             }

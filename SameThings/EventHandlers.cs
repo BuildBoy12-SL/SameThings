@@ -2,11 +2,8 @@ using Exiled.API.Extensions;
 using Exiled.Events.EventArgs;
 using MEC;
 using Mirror;
-using NorthwoodLib;
-using System;
 using System.Linq;
 using UnityEngine;
-
 using Object = UnityEngine.Object;
 using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;
@@ -16,14 +13,14 @@ namespace SameThings
 {
     internal sealed class EventHandlers
     {
-        internal SameThings Plugin => SameThings.Instance;
+        private SameThings Plugin => SameThings.Instance;
 
         #region Subscription
 
         internal void SubscribeAll()
         {
             Server.RoundStarted += HandleRoundStart;
-            Server.RestartingRound += HandleRoundRestaring;
+            Server.RestartingRound += HandleRoundRestarting;
 
             Player.Joined += HandlePlayerJoin;
             Player.TriggeringTesla += HandleTeslaTrigger;
@@ -43,7 +40,7 @@ namespace SameThings
         internal void UnSubscribeAll()
         {
             Server.RoundStarted -= HandleRoundStart;
-            Server.RestartingRound -= HandleRoundRestaring;
+            Server.RestartingRound -= HandleRoundRestarting;
 
             Player.Joined -= HandlePlayerJoin;
             Player.TriggeringTesla -= HandleTeslaTrigger;
@@ -73,7 +70,8 @@ namespace SameThings
                 State.RunCoroutine(HandlerHelper.RunAutoCleanup());
 
             if (Plugin.Config.DecontaminationTime > -1)
-                LightContainmentZoneDecontamination.DecontaminationController.Singleton.TimeOffset = (float)((11.7399997711182 - Plugin.Config.DecontaminationTime) * 60.0);
+                LightContainmentZoneDecontamination.DecontaminationController.Singleton.TimeOffset =
+                    (float) ((11.7399997711182 - Plugin.Config.DecontaminationTime) * 60.0);
 
             if (Plugin.Config.GeneratorDuration > -1)
             {
@@ -93,7 +91,7 @@ namespace SameThings
             HandlerHelper.SetupWindowsHealth();
         }
 
-        public void HandleRoundRestaring()
+        public void HandleRoundRestarting()
         {
             State.Refresh();
         }
@@ -106,9 +104,11 @@ namespace SameThings
                 State.PrevPos[ev.Player] = Vector3.zero;
 
                 if (!ev.Player.ReferenceHub.serverRoles.Staff
-                && Plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s, StringComparison.OrdinalIgnoreCase)))
+                    && Plugin.Config.NicknameFilter.Any(s =>
+                        ev.Player.Nickname.ToLower().Contains(s.ToLower())))
                 {
-                    ev.Player.Disconnect($"{Plugin.Config.NicknameFilterReason} [Disconnect by SameThings Exiled Plugin]");
+                    ev.Player.Disconnect(
+                        $"{Plugin.Config.NicknameFilterReason} [Disconnect by SameThings Exiled Plugin]");
                 }
             });
         }
@@ -121,7 +121,7 @@ namespace SameThings
         public void HandleWeaponShoot(ShootingEventArgs ev)
         {
             if (Plugin.Config.InfiniteAmmo)
-                ev.Shooter.SetWeaponAmmo(ev.Shooter.CurrentItem, (int)ev.Shooter.CurrentItem.durability + 1);
+                ev.Shooter.SetWeaponAmmo(ev.Shooter.CurrentItem, (int) ev.Shooter.CurrentItem.durability + 1);
         }
 
         public void HandleSetClass(ChangingRoleEventArgs ev)
@@ -158,6 +158,7 @@ namespace SameThings
                 ev.IsAllowed = false;
                 return;
             }
+
             if (Plugin.Config.GeneratorUnlockItems.Length == 0)
                 return;
 
@@ -209,6 +210,7 @@ namespace SameThings
             {
                 return;
             }
+
             foreach (Pickup pickup in Object.FindObjectsOfType<Pickup>())
             {
                 if (pickup.transform.position.y < 5f)
@@ -216,6 +218,7 @@ namespace SameThings
                     NetworkServer.Destroy(pickup.gameObject);
                 }
             }
+
             foreach (Ragdoll ragdoll in Object.FindObjectsOfType<Ragdoll>())
             {
                 if (ragdoll.transform.position.y < 5f)

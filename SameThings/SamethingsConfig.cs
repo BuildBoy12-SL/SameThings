@@ -52,8 +52,10 @@ namespace SameThings
 
         #region Intercom
 
-        [Description("Custom intercom content. If there's no specific content, then the default client content is used.")]
-        public Dictionary<Intercom.State, string> CustomIntercomContent { get; set; } = new Dictionary<Intercom.State, string>();
+        [Description(
+            "Custom intercom content. If there's no specific content, then the default client content is used.")]
+        public Dictionary<Intercom.State, string> CustomIntercomContent { get; set; } =
+            new Dictionary<Intercom.State, string>();
 
         #endregion
 
@@ -74,13 +76,13 @@ namespace SameThings
         #region SCP-106
 
         [Description("How many sacrifices it takes to lure 106. Values below 1 set the recontainer to always active.")]
-        public int Scp106LureAmount { get; set; } = 0;
+        public int Scp106LureAmount { get; set; } = 1;
 
         [Description("Amount of time before another sacrifice can be made.")]
         public int Scp106LureReload { get; set; } = 0;
 
         [Description("Teams that can enter the femur breaker.")]
-        public Team[] Scp106LureTeam { get; set; } = { Team.MTF, Team.CHI, Team.RSC, Team.CDP };
+        public Team[] Scp106LureTeam { get; set; } = {Team.MTF, Team.CHI, Team.RSC, Team.CDP};
 
         #endregion
 
@@ -99,13 +101,13 @@ namespace SameThings
         public int GeneratorDuration { get; set; } = -1;
 
         [Description("Cancels a player connection if they have any of these in their name.")]
-        public string[] NicknameFilter { get; set; } = { ".com", ".org" };
+        public string[] NicknameFilter { get; set; } = {".com", ".org"};
 
         [Description("Displays this message when they get disconnected by the nickname filter.")]
         public string NicknameFilterReason { get; set; } = "Disconnected by this servers name filter.";
 
         [Description("Teams that can unlock generators.")]
-        public Team[] GeneratorUnlockTeams { get; set; } = { Team.SCP, Team.MTF, Team.CHI, Team.RSC, Team.CDP };
+        public Team[] GeneratorUnlockTeams { get; set; } = {Team.SCP, Team.MTF, Team.CHI, Team.RSC, Team.CDP};
 
         [Description("Items that can unlock generators. Ignored if the list is empty.")]
         public ItemType[] GeneratorUnlockItems { get; set; } =
@@ -172,13 +174,13 @@ namespace SameThings
         [Description("Amount of time a role can stand still before their natural regen cancels.")]
         public Dictionary<RoleType, int> SelfHealingDuration { get; set; } = new Dictionary<RoleType, int>
         {
-            { RoleType.Scp096, 5 }
+            [RoleType.Scp096] = 5
         };
 
         [Description("Amount of health a role will heal every second.")]
         public Dictionary<RoleType, int> SelfHealingAmount { get; set; } = new Dictionary<RoleType, int>
         {
-            { RoleType.Scp096, 1 }
+            [RoleType.Scp096] = 1
         };
 
         #endregion

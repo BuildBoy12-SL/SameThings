@@ -10,8 +10,8 @@ namespace SameThings
         public override string Name => "SameThings";
         public override string Author => "Build";
 
-        public readonly Harmony Harmony = new Harmony(nameof(SameThings).ToLowerInvariant());
-        private readonly EventHandlers EventHandlers = new EventHandlers();
+        private readonly Harmony _harmony = new Harmony(nameof(SameThings).ToLowerInvariant());
+        private readonly EventHandlers _eventHandlers = new EventHandlers();
 
         public override void OnEnabled()
         {
@@ -19,16 +19,16 @@ namespace SameThings
 
             Instance = this;
 
-            EventHandlers.SubscribeAll();
-            Harmony.PatchAll();
+            _eventHandlers.SubscribeAll();
+            _harmony.PatchAll();
         }
 
         public override void OnDisabled()
         {
             base.OnDisabled();
 
-            EventHandlers.UnSubscribeAll();
-            Harmony.UnpatchAll();
+            _eventHandlers.UnSubscribeAll();
+            _harmony.UnpatchAll();
 
             Instance = null;
         }
