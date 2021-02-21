@@ -93,7 +93,7 @@ namespace SameThings
             }
         }
 
-        private static void DoSelfHealing(Exiled.API.Features.Player ply)
+        private static void DoSelfHealing(Player ply)
         {
             if (ply.IsHost
                 || !Plugin.Config.SelfHealingAmount.TryGetValue(ply.Role, out int amount)
@@ -111,7 +111,7 @@ namespace SameThings
             ply.Health = ((ply.Health + amount) >= ply.MaxHealth) ? ply.MaxHealth : (ply.Health + amount);
         }
 
-        public static void RunRestoreMaxHp(Exiled.API.Features.Player player, int maxHp)
+        public static void RunRestoreMaxHp(Player player, int maxHp)
         {
             player.MaxHealth = maxHp;
             player.Health = maxHp;
@@ -124,10 +124,8 @@ namespace SameThings
                 return;
 
             var windows = Object.FindObjectsOfType<BreakableWindow>();
-            for (var z = 0; z < windows.Length; z++)
+            foreach (var window in windows)
             {
-                var window = windows[z];
-
                 window.health = cfg.WindowHealth;
             }
         }

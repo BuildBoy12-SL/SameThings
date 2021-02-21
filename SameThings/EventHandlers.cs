@@ -103,6 +103,9 @@ namespace SameThings
                 State.AfkTime[ev.Player] = 0;
                 State.PrevPos[ev.Player] = Vector3.zero;
 
+                if (Plugin.Config.NicknameFilter.Length == 0)
+                    return;
+
                 if (!ev.Player.ReferenceHub.serverRoles.Staff
                     && Plugin.Config.NicknameFilter.Any(s =>
                         ev.Player.Nickname.ToLower().Contains(s.ToLower())))
@@ -187,14 +190,14 @@ namespace SameThings
             }
         }
 
-        public void HandleContain106(ContainingEventArgs ev)
+        /*public void HandleContain106(ContainingEventArgs ev)
         {
             // That means it's disabled
             if (Plugin.Config.Scp106LureAmount < 1)
                 return;
 
             ev.IsAllowed = State.LuresCount > Plugin.Config.Scp106LureAmount;
-        }
+        }*/
 
         #endregion
 
