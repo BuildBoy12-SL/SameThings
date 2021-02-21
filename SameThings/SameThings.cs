@@ -1,38 +1,36 @@
-﻿using Exiled.API.Features;
+using Exiled.API.Features;
 using HarmonyLib;
-using System;
 
 namespace SameThings
 {
-    public class SameThings : Plugin<Config>
+    public sealed class SameThings : Plugin<SameThingsConfig>
     {
-        public Harmony Harmony { get; private set; }
-        private int patchCounter;
-        private EventHandlers EventHandlers;
+        internal static SameThings Instance;
+
+        public override string Name => "SameThings";
+        public override string Author => "Build";
+
+        private readonly Harmony _harmony = new Harmony(nameof(SameThings).ToLowerInvariant());
+        private readonly EventHandlers _eventHandlers = new EventHandlers();
 
         public override void OnEnabled()
         {
             base.OnEnabled();
+
             Instance = this;
-            EventHandlers = new EventHandlers(this);
-            EventHandlers.SubscribeAll();
-            Harmony = new Harmony($"SameThings.{++patchCounter}");
-            Harmony.PatchAll();
+
+            _eventHandlers.SubscribeAll();
+            _harmony.PatchAll();
         }
 
         public override void OnDisabled()
         {
             base.OnDisabled();
-            EventHandlers.UnSubscribeAll();
-            EventHandlers = null;
-            Harmony.UnpatchAll();
+
+            _eventHandlers.UnSubscribeAll();
+            _harmony.UnpatchAll();
+
             Instance = null;
         }
-
-        public override string Name => "SameThings";
-        public override Version Version => new Version(2, 0, 0);
-        public override string Author => "Build";
-
-        internal static SameThings Instance;
     }
 }

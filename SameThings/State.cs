@@ -1,4 +1,4 @@
-﻿using Exiled.API.Features;
+using Exiled.API.Features;
 using MEC;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,33 +7,30 @@ namespace SameThings
 {
     internal static class State
     {
+        internal static readonly List<CoroutineHandle> Coroutines = new List<CoroutineHandle>(10);
+
+        internal static readonly Queue<Pickup> Pickups = new Queue<Pickup>(150);
+        internal static readonly Dictionary<Player, Vector3> PrevPos = new Dictionary<Player, Vector3>(20);
+        internal static readonly Dictionary<Player, int> AfkTime = new Dictionary<Player, int>(20);
+
+        internal static int LuresCount;
+
         internal static void Refresh()
         {
-            foreach (CoroutineHandle coroutine in _coroutines)
+            foreach (var coroutine in Coroutines)
                 Timing.KillCoroutines(coroutine);
 
-            _coroutines = new List<CoroutineHandle>();
+            Coroutines.Clear();
+            Pickups.Clear();
+            PrevPos.Clear();
+            AfkTime.Clear();
+
             LuresCount = 0;
-            Pickups = new Dictionary<Pickup, int>();
-            PrevPos = new Dictionary<Player, Vector3>();
-            AfkTime = new Dictionary<Player, int>();
-            BreakableWindows = new List<BreakableWindow>();
         }
 
         internal static void RunCoroutine(IEnumerator<float> coroutine)
         {
-            _coroutines.Add(Timing.RunCoroutine(coroutine));
+            Coroutines.Add(Timing.RunCoroutine(coroutine));
         }
-
-        internal static List<BreakableWindow> BreakableWindows;
-
-        internal static Dictionary<Pickup, int> Pickups;
-
-        internal static Dictionary<Player, Vector3> PrevPos;
-        internal static Dictionary<Player, int> AfkTime;
-
-        internal static int LuresCount;
-
-        internal static List<CoroutineHandle> _coroutines;
     }
 }

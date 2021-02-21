@@ -1,10 +1,7 @@
-﻿using Exiled.API.Extensions;
-using Exiled.API.Features;
+using Exiled.API.Extensions;
 using Exiled.Events.EventArgs;
 using MEC;
 using Mirror;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -14,24 +11,28 @@ using Warhead = Exiled.Events.Handlers.Warhead;
 
 namespace SameThings
 {
-    internal class EventHandlers
+    internal sealed class EventHandlers
     {
-        internal SameThings plugin;
-        internal EventHandlers(SameThings plugin) => this.plugin = plugin;
+        private SameThings Plugin => SameThings.Instance;
+
+        #region Subscription
 
         internal void SubscribeAll()
         {
             Server.RoundStarted += HandleRoundStart;
-            Server.RoundEnded += HandleRoundEnd;
+            Server.RestartingRound += HandleRoundRestarting;
+
             Player.Joined += HandlePlayerJoin;
             Player.TriggeringTesla += HandleTeslaTrigger;
             Player.Shooting += HandleWeaponShoot;
             Player.ChangingRole += HandleSetClass;
             Player.ItemDropped += HandleDroppedItem;
+
             Player.EjectingGeneratorTablet += HandleGeneratorEject;
             Player.InsertingGeneratorTablet += HandleGeneratorInsert;
             Player.UnlockingGenerator += HandleGeneratorUnlock;
             Player.EnteringFemurBreaker += HandleFemurEnter;
+
             Player.Left += HandlePlayerLeave;
             Warhead.Detonated += HandleWarheadDetonation;
         }
@@ -39,47 +40,58 @@ namespace SameThings
         internal void UnSubscribeAll()
         {
             Server.RoundStarted -= HandleRoundStart;
-            Server.RoundEnded -= HandleRoundEnd;
+            Server.RestartingRound -= HandleRoundRestarting;
+
             Player.Joined -= HandlePlayerJoin;
             Player.TriggeringTesla -= HandleTeslaTrigger;
             Player.Shooting -= HandleWeaponShoot;
             Player.ChangingRole -= HandleSetClass;
             Player.ItemDropped -= HandleDroppedItem;
+
             Player.EjectingGeneratorTablet -= HandleGeneratorEject;
             Player.InsertingGeneratorTablet -= HandleGeneratorInsert;
             Player.UnlockingGenerator -= HandleGeneratorUnlock;
             Player.EnteringFemurBreaker -= HandleFemurEnter;
+
             Player.Left -= HandlePlayerLeave;
             Warhead.Detonated -= HandleWarheadDetonation;
         }
 
+        #endregion
+
+        #region Handlers
+
         public void HandleRoundStart()
         {
-            if (plugin.Config.AutoWarheadLock) 
-                Exiled.API.Features.Warhead.IsLocked = false;
-            if (plugin.Config.ForceRestart > -1) 
-                State.RunCoroutine(RunForceRestart());
-            if (plugin.Config.AutoWarheadTime > -1) 
-                State.RunCoroutine(RunAutoWarhead());
-            if (plugin.Config.ItemAutoCleanup > -1) 
-                State.RunCoroutine(RunAutoCleanup());
-            if (plugin.Config.DecontaminationTime > -1) 
-                LightContainmentZoneDecontamination.DecontaminationController.Singleton.TimeOffset = (float)((11.7399997711182 - plugin.Config.DecontaminationTime) * 60.0);
-            if (plugin.Config.GeneratorDuration > -1)
+            if (Plugin.Config.ForceRestart > -1)
+                State.RunCoroutine(HandlerHelper.RunForceRestart());
+
+            if (Plugin.Config.ItemAutoCleanup != 0)
+                State.RunCoroutine(HandlerHelper.RunAutoCleanup());
+
+            if (Plugin.Config.DecontaminationTime > -1)
+                LightContainmentZoneDecontamination.DecontaminationController.Singleton.TimeOffset =
+                    (float) ((11.7399997711182 - Plugin.Config.DecontaminationTime) * 60.0);
+
+            if (Plugin.Config.GeneratorDuration > -1)
             {
                 foreach (Generator079 generator in Generator079.Generators)
                 {
-                    generator.startDuration = plugin.Config.GeneratorDuration;
-                    generator.SetTime(plugin.Config.GeneratorDuration);
+                    generator.startDuration = Plugin.Config.GeneratorDuration;
+                    generator.SetTime(Plugin.Config.GeneratorDuration);
                 }
             }
-            if (plugin.Config.SelfHealingDuration.Count > 0)
-                State.RunCoroutine(RunSelfHealing());
-            if (plugin.Config.Scp106LureAmount > 0)
+
+            if (Plugin.Config.SelfHealingDuration.Count > 0)
+                State.RunCoroutine(HandlerHelper.RunSelfHealing());
+
+            if (Plugin.Config.Scp106LureAmount < 1)
                 Object.FindObjectOfType<LureSubjectContainer>().SetState(true);
+
+            HandlerHelper.SetupWindowsHealth();
         }
 
-        public void HandleRoundEnd(RoundEndedEventArgs _)
+        public void HandleRoundRestarting()
         {
             State.Refresh();
         }
@@ -90,103 +102,118 @@ namespace SameThings
             {
                 State.AfkTime[ev.Player] = 0;
                 State.PrevPos[ev.Player] = Vector3.zero;
-                if (!ev.Player.ReferenceHub.serverRoles.Staff && plugin.Config.NicknameFilter.Any((string s) => ev.Player.Nickname.Contains(s)))
+
+                if (Plugin.Config.NicknameFilter.Length == 0)
+                    return;
+
+                if (!ev.Player.ReferenceHub.serverRoles.Staff
+                    && Plugin.Config.NicknameFilter.Any(s =>
+                        ev.Player.Nickname.ToLower().Contains(s.ToLower())))
                 {
-                    ev.Player.Disconnect(plugin.Config.NicknameFilterReason);
+                    ev.Player.Disconnect(
+                        $"{Plugin.Config.NicknameFilterReason} [Disconnect by SameThings Exiled Plugin]");
                 }
             });
         }
 
         public void HandleTeslaTrigger(TriggeringTeslaEventArgs ev)
         {
-            ev.IsTriggerable = plugin.Config.TeslaTriggerableTeam.Contains(ev.Player.Team);
+            ev.IsTriggerable = Plugin.Config.TeslaTriggerableTeam.Contains(ev.Player.Team);
         }
 
         public void HandleWeaponShoot(ShootingEventArgs ev)
         {
-            if (plugin.Config.InfiniteAmmo)
-            {
-                ev.Shooter.SetWeaponAmmo(ev.Shooter.CurrentItem, (int)ev.Shooter.CurrentItem.durability + 1);
-            }
+            if (Plugin.Config.InfiniteAmmo)
+                ev.Shooter.SetWeaponAmmo(ev.Shooter.CurrentItem, (int) ev.Shooter.CurrentItem.durability + 1);
         }
 
         public void HandleSetClass(ChangingRoleEventArgs ev)
         {
-            if (plugin.Config.MaxHealth.TryGetValue(ev.NewRole, out int maxHp))
-                RunRestoreMaxHp(ev.Player, maxHp);
+            if (Plugin.Config.MaxHealth.TryGetValue(ev.NewRole, out int maxHp))
+                HandlerHelper.RunRestoreMaxHp(ev.Player, maxHp);
         }
 
         public void HandleDroppedItem(ItemDroppedEventArgs ev)
         {
-            if (plugin.Config.ItemAutoCleanup <= 0 || plugin.Config.ItemCleanupIgnore.Contains(ev.Pickup.ItemId))
+            if (Plugin.Config.ItemAutoCleanup == 0
+                || Plugin.Config.ItemCleanupIgnore.Contains(ev.Pickup.ItemId))
             {
                 return;
             }
-            State.Pickups.Add(ev.Pickup, (int)Round.ElapsedTime.TotalSeconds + plugin.Config.ItemAutoCleanup);
+
+            State.Pickups.Enqueue(ev.Pickup);
         }
 
         public void HandleGeneratorEject(EjectingGeneratorTabletEventArgs ev)
         {
-            ev.IsAllowed = plugin.Config.GeneratorEjectTeams.Contains(ev.Player.Team);
+            ev.IsAllowed = Plugin.Config.GeneratorEjectTeams.Contains(ev.Player.Team);
         }
 
         public void HandleGeneratorInsert(InsertingGeneratorTabletEventArgs ev)
         {
-            ev.IsAllowed = plugin.Config.GeneratorInsertTeams.Contains(ev.Player.Team);
+            ev.IsAllowed = Plugin.Config.GeneratorInsertTeams.Contains(ev.Player.Team);
         }
 
         public void HandleGeneratorUnlock(UnlockingGeneratorEventArgs ev)
         {
-            if (!plugin.Config.GeneratorUnlockTeams.Contains(ev.Player.Team))
+            if (!Plugin.Config.GeneratorUnlockTeams.Contains(ev.Player.Team))
             {
                 ev.IsAllowed = false;
                 return;
             }
-            if (plugin.Config.GeneratorUnlockItems.Count == 0)
-            {
+
+            if (Plugin.Config.GeneratorUnlockItems.Length == 0)
                 return;
-            }
-            if (plugin.Config.GeneratorUnlockItems.Contains(ev.Player.Inventory.NetworkcurItem))
-            {
+
+            if (Plugin.Config.GeneratorUnlockItems.Contains(ev.Player.CurrentItem.id))
                 ev.IsAllowed = true;
-            }
         }
+
+        #region SCP-106
 
         public void HandleFemurEnter(EnteringFemurBreakerEventArgs ev)
         {
-            if (plugin.Config.Scp106LureAmount < 0)
-            {
+            // That means the femur breaker is always open
+            if (Plugin.Config.Scp106LureAmount < 1)
                 return;
-            }
-            if (!plugin.Config.Scp106LureTeam.Contains(ev.Player.Team))
+
+            // Allowed team check
+            if (!Plugin.Config.Scp106LureTeam.Contains(ev.Player.Team))
             {
                 ev.IsAllowed = false;
                 return;
             }
-            if (++State.LuresCount < plugin.Config.Scp106LureAmount)
+
+            if (++State.LuresCount < Plugin.Config.Scp106LureAmount)
             {
-                State.RunCoroutine(RunLureReload());
+                State.RunCoroutine(HandlerHelper.RunLureReload());
             }
         }
 
+        /*public void HandleContain106(ContainingEventArgs ev)
+        {
+            // That means it's disabled
+            if (Plugin.Config.Scp106LureAmount < 1)
+                return;
+
+            ev.IsAllowed = State.LuresCount > Plugin.Config.Scp106LureAmount;
+        }*/
+
+        #endregion
+
         public void HandlePlayerLeave(LeftEventArgs ev)
         {
-            if (State.PrevPos.ContainsKey(ev.Player))
-            {
-                State.PrevPos.Remove(ev.Player);
-            }
-            if (State.AfkTime.ContainsKey(ev.Player))
-            {
-                State.AfkTime.Remove(ev.Player);
-            }
+            State.PrevPos.Remove(ev.Player);
+            State.AfkTime.Remove(ev.Player);
         }
 
         public void HandleWarheadDetonation()
         {
-            if (!plugin.Config.WarheadCleanup)
+            if (!Plugin.Config.WarheadCleanup)
             {
                 return;
             }
+
             foreach (Pickup pickup in Object.FindObjectsOfType<Pickup>())
             {
                 if (pickup.transform.position.y < 5f)
@@ -194,6 +221,7 @@ namespace SameThings
                     NetworkServer.Destroy(pickup.gameObject);
                 }
             }
+
             foreach (Ragdoll ragdoll in Object.FindObjectsOfType<Ragdoll>())
             {
                 if (ragdoll.transform.position.y < 5f)
@@ -203,98 +231,6 @@ namespace SameThings
             }
         }
 
-        private IEnumerator<float> RunForceRestart()
-        {
-            yield return Timing.WaitForSeconds(plugin.Config.ForceRestart);
-            Log.Info("Restarting round.");
-            PlayerManager.localPlayer.GetComponent<PlayerStats>().Roundrestart();
-            yield break;
-        }
-
-        private IEnumerator<float> RunAutoWarhead()
-        {
-            yield return Timing.WaitForSeconds(plugin.Config.AutoWarheadTime);
-            if (plugin.Config.AutoWarheadLock)
-            {
-                Exiled.API.Features.Warhead.IsLocked = true;
-            }
-            if (Exiled.API.Features.Warhead.IsDetonated || Exiled.API.Features.Warhead.IsInProgress)
-            {
-                Log.Info("Warhead is detonated or is in progress.");
-                yield break;
-            }
-            Log.Info("Activating Warhead.");
-            Exiled.API.Features.Warhead.Start();
-            if (!string.IsNullOrEmpty(plugin.Config.AutoWarheadStartText))
-            {
-                Map.Broadcast(10, plugin.Config.AutoWarheadStartText, Broadcast.BroadcastFlags.Normal);
-            }
-        }
-
-        private IEnumerator<float> RunAutoCleanup()
-        {
-            for (; ; )
-            {
-                foreach (Pickup pickup in State.Pickups.Keys)
-                {
-                    if (pickup == null)
-                    {
-                        State.Pickups.Remove(pickup);
-                    }
-                    else if (State.Pickups[pickup] <= Round.ElapsedTime.TotalSeconds)
-                    {
-                        NetworkServer.Destroy(pickup.gameObject);
-                    }
-                }
-                yield return Timing.WaitForSeconds(plugin.Config.ItemAutoCleanup);
-            }
-        }
-
-        private IEnumerator<float> RunLureReload()
-        {
-            yield return Timing.WaitForSeconds(plugin.Config.Scp106LureReload > 0 ? plugin.Config.Scp106LureReload : 0);
-            Object.FindObjectOfType<LureSubjectContainer>().NetworkallowContain = false;
-            yield break;
-        }
-
-        private IEnumerator<float> RunSelfHealing()
-        {
-            for(; ; )
-            {
-                foreach (Exiled.API.Features.Player ply in Exiled.API.Features.Player.List)
-                {
-                    try
-                    {
-                        DoSelfHealing(ply);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"Error during SelfHealing in SameThings: {e}");
-                    }
-                    yield return Timing.WaitForSeconds(1f);
-                }
-            }
-        }
-
-        private void DoSelfHealing(Exiled.API.Features.Player ply)
-        {
-            if (ply.IsHost || !plugin.Config.SelfHealingAmount.TryGetValue(ply.Role, out int amount) || !plugin.Config.SelfHealingDuration.TryGetValue(ply.Role, out int duration))
-            {
-                return;
-            }
-            State.AfkTime[ply] = (State.PrevPos[ply] == ply.Position) ? (State.AfkTime[ply] + 1) : 0;
-            State.PrevPos[ply] = ply.Position;
-            if (State.AfkTime[ply] <= duration)
-            {
-                return;
-            }
-            ply.Health = ((ply.Health + amount) >= ply.MaxHealth) ? ply.MaxHealth : (ply.Health + amount);
-        }
-
-        private void RunRestoreMaxHp(Exiled.API.Features.Player player, int maxHp)
-        {
-            player.MaxHealth = maxHp;
-            player.Health = maxHp;
-        }
+        #endregion
     }
 }
