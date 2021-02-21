@@ -1,3 +1,4 @@
+using System;
 using Exiled.API.Features;
 using HarmonyLib;
 
@@ -9,6 +10,8 @@ namespace SameThings
 
         public override string Name => "SameThings";
         public override string Author => "Build";
+        public override Version Version { get; } = new Version(1, 0, 0);
+        public override Version RequiredExiledVersion { get; } = new Version(2, 2, 5);
 
         private readonly Harmony _harmony = new Harmony(nameof(SameThings).ToLowerInvariant());
         private readonly EventHandlers _eventHandlers = new EventHandlers();
