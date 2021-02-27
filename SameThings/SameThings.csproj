@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EXILED" Version="2.2.5" />
+    <PackageReference Include="EXILED" Version="2.3.4" />
     <PackageReference Include="Lib.Harmony" Version="2.0.3" />
 
     <Reference Include="Assembly-CSharp" HintPath="$(EXILED_References)\Assembly-CSharp-Publicized.dll" Private="false" />

@@ -13,16 +13,16 @@ namespace SameThings
 {
     internal sealed class EventHandlers
     {
-        private SameThings Plugin => SameThings.Instance;
+        private static SameThings Plugin => SameThings.Instance;
 
         #region Subscription
 
-        internal void SubscribeAll()
+        internal static void SubscribeAll()
         {
             Server.RoundStarted += HandleRoundStart;
             Server.RestartingRound += HandleRoundRestarting;
 
-            Player.Joined += HandlePlayerJoin;
+            Player.Verified += HandlePlayerVerified;
             Player.TriggeringTesla += HandleTeslaTrigger;
             Player.Shooting += HandleWeaponShoot;
             Player.ChangingRole += HandleSetClass;
@@ -33,16 +33,16 @@ namespace SameThings
             Player.UnlockingGenerator += HandleGeneratorUnlock;
             Player.EnteringFemurBreaker += HandleFemurEnter;
 
-            Player.Left += HandlePlayerLeave;
+            Player.Destroying += HandlePlayerDestroying;
             Warhead.Detonated += HandleWarheadDetonation;
         }
 
-        internal void UnSubscribeAll()
+        internal static void UnSubscribeAll()
         {
             Server.RoundStarted -= HandleRoundStart;
             Server.RestartingRound -= HandleRoundRestarting;
 
-            Player.Joined -= HandlePlayerJoin;
+            Player.Verified -= HandlePlayerVerified;
             Player.TriggeringTesla -= HandleTeslaTrigger;
             Player.Shooting -= HandleWeaponShoot;
             Player.ChangingRole -= HandleSetClass;
@@ -53,7 +53,7 @@ namespace SameThings
             Player.UnlockingGenerator -= HandleGeneratorUnlock;
             Player.EnteringFemurBreaker -= HandleFemurEnter;
 
-            Player.Left -= HandlePlayerLeave;
+            Player.Destroying -= HandlePlayerDestroying;
             Warhead.Detonated -= HandleWarheadDetonation;
         }
 
@@ -61,7 +61,7 @@ namespace SameThings
 
         #region Handlers
 
-        public void HandleRoundStart()
+        private static void HandleRoundStart()
         {
             if (Plugin.Config.ForceRestart > -1)
                 State.RunCoroutine(HandlerHelper.RunForceRestart());
@@ -82,7 +82,7 @@ namespace SameThings
                 }
             }
 
-            if (Plugin.Config.SelfHealingDuration.Count > 0)
+            if (!Plugin.Config.SelfHealingDuration.IsEmpty() && !Plugin.Config.SelfHealingAmount.IsEmpty())
                 State.RunCoroutine(HandlerHelper.RunSelfHealing());
 
             if (Plugin.Config.Scp106LureAmount < 1)
@@ -91,12 +91,12 @@ namespace SameThings
             HandlerHelper.SetupWindowsHealth();
         }
 
-        public void HandleRoundRestarting()
+        private static void HandleRoundRestarting()
         {
             State.Refresh();
         }
 
-        public void HandlePlayerJoin(JoinedEventArgs ev)
+        private static void HandlePlayerVerified(VerifiedEventArgs ev)
         {
             Timing.CallDelayed(0.25f, () =>
             {
@@ -116,24 +116,24 @@ namespace SameThings
             });
         }
 
-        public void HandleTeslaTrigger(TriggeringTeslaEventArgs ev)
+        private static void HandleTeslaTrigger(TriggeringTeslaEventArgs ev)
         {
             ev.IsTriggerable = Plugin.Config.TeslaTriggerableTeam.Contains(ev.Player.Team);
         }
 
-        public void HandleWeaponShoot(ShootingEventArgs ev)
+        private static void HandleWeaponShoot(ShootingEventArgs ev)
         {
             if (Plugin.Config.InfiniteAmmo)
                 ev.Shooter.SetWeaponAmmo(ev.Shooter.CurrentItem, (int) ev.Shooter.CurrentItem.durability + 1);
         }
 
-        public void HandleSetClass(ChangingRoleEventArgs ev)
+        private static void HandleSetClass(ChangingRoleEventArgs ev)
         {
             if (Plugin.Config.MaxHealth.TryGetValue(ev.NewRole, out int maxHp))
                 HandlerHelper.RunRestoreMaxHp(ev.Player, maxHp);
         }
 
-        public void HandleDroppedItem(ItemDroppedEventArgs ev)
+        private static void HandleDroppedItem(ItemDroppedEventArgs ev)
         {
             if (Plugin.Config.ItemAutoCleanup == 0
                 || Plugin.Config.ItemCleanupIgnore.Contains(ev.Pickup.ItemId))
@@ -144,17 +144,17 @@ namespace SameThings
             State.Pickups.Enqueue(ev.Pickup);
         }
 
-        public void HandleGeneratorEject(EjectingGeneratorTabletEventArgs ev)
+        private static void HandleGeneratorEject(EjectingGeneratorTabletEventArgs ev)
         {
             ev.IsAllowed = Plugin.Config.GeneratorEjectTeams.Contains(ev.Player.Team);
         }
 
-        public void HandleGeneratorInsert(InsertingGeneratorTabletEventArgs ev)
+        private static void HandleGeneratorInsert(InsertingGeneratorTabletEventArgs ev)
         {
             ev.IsAllowed = Plugin.Config.GeneratorInsertTeams.Contains(ev.Player.Team);
         }
 
-        public void HandleGeneratorUnlock(UnlockingGeneratorEventArgs ev)
+        private static void HandleGeneratorUnlock(UnlockingGeneratorEventArgs ev)
         {
             if (!Plugin.Config.GeneratorUnlockTeams.Contains(ev.Player.Team))
             {
@@ -171,7 +171,7 @@ namespace SameThings
 
         #region SCP-106
 
-        public void HandleFemurEnter(EnteringFemurBreakerEventArgs ev)
+        private static void HandleFemurEnter(EnteringFemurBreakerEventArgs ev)
         {
             // That means the femur breaker is always open
             if (Plugin.Config.Scp106LureAmount < 1)
@@ -201,13 +201,13 @@ namespace SameThings
 
         #endregion
 
-        public void HandlePlayerLeave(LeftEventArgs ev)
+        private static void HandlePlayerDestroying(DestroyingEventArgs ev)
         {
             State.PrevPos.Remove(ev.Player);
             State.AfkTime.Remove(ev.Player);
         }
 
-        public void HandleWarheadDetonation()
+        private static void HandleWarheadDetonation()
         {
             if (!Plugin.Config.WarheadCleanup)
             {
