@@ -10,7 +10,7 @@ namespace SameThings
 {
     internal static class HandlerHelper
     {
-        internal static SameThings Plugin => SameThings.Instance;
+        private static SameThings Plugin => SameThings.Instance;
 
         public static IEnumerator<float> RunForceRestart()
         {

@@ -7,7 +7,7 @@ namespace SameThings
 {
     internal static class State
     {
-        internal static readonly List<CoroutineHandle> Coroutines = new List<CoroutineHandle>(10);
+        private static readonly List<CoroutineHandle> Coroutines = new List<CoroutineHandle>(10);
 
         internal static readonly Queue<Pickup> Pickups = new Queue<Pickup>(150);
         internal static readonly Dictionary<Player, Vector3> PrevPos = new Dictionary<Player, Vector3>(20);
