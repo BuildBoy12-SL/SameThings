@@ -89,6 +89,14 @@ namespace SameThings
                 Object.FindObjectOfType<LureSubjectContainer>().SetState(true);
 
             HandlerHelper.SetupWindowsHealth();
+
+            if (Plugin.Config.InsertTablets)
+            {
+                foreach (WorkStation workstation in Object.FindObjectsOfType<WorkStation>())
+                {
+                    workstation.NetworkisTabletConnected = true;
+                }
+            }
         }
 
         private static void HandleRoundRestarting()
