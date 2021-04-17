@@ -97,6 +97,9 @@ namespace SameThings
         [Description("If the micro ammo is infinite.")]
         public bool InfiniteMicroAmmo { get; set; } = false;
 
+        [Description("If the workstations should have WeaponManagerTablets inserted by default.")]
+        public bool InsertTablets { get; set; } = false;
+
         [Description("Amount of time it takes for a generator to activate. Values below 0 disable this.")]
         public int GeneratorDuration { get; set; } = -1;
 

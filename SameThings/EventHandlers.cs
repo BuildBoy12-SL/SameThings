@@ -89,6 +89,14 @@ namespace SameThings
                 Object.FindObjectOfType<LureSubjectContainer>().SetState(true);
 
             HandlerHelper.SetupWindowsHealth();
+
+            if (Plugin.Config.InsertTablets)
+            {
+                foreach (WorkStation workstation in Object.FindObjectsOfType<WorkStation>())
+                {
+                    workstation.NetworkisTabletConnected = true;
+                }
+            }
         }
 
         private static void HandleRoundRestarting()
@@ -118,7 +126,8 @@ namespace SameThings
 
         private static void HandleTeslaTrigger(TriggeringTeslaEventArgs ev)
         {
-            ev.IsTriggerable = Plugin.Config.TeslaTriggerableTeam.Contains(ev.Player.Team);
+            if (!Plugin.Config.TeslaTriggerableTeam.Contains(ev.Player.Team))
+                ev.IsTriggerable = false;
         }
 
         private static void HandleWeaponShoot(ShootingEventArgs ev)
@@ -146,12 +155,14 @@ namespace SameThings
 
         private static void HandleGeneratorEject(EjectingGeneratorTabletEventArgs ev)
         {
-            ev.IsAllowed = Plugin.Config.GeneratorEjectTeams.Contains(ev.Player.Team);
+            if (!Plugin.Config.GeneratorEjectTeams.Contains(ev.Player.Team))
+                ev.IsAllowed = false;
         }
 
         private static void HandleGeneratorInsert(InsertingGeneratorTabletEventArgs ev)
         {
-            ev.IsAllowed = Plugin.Config.GeneratorInsertTeams.Contains(ev.Player.Team);
+            if (!Plugin.Config.GeneratorInsertTeams.Contains(ev.Player.Team))
+                ev.IsAllowed = false;
         }
 
         private static void HandleGeneratorUnlock(UnlockingGeneratorEventArgs ev)
