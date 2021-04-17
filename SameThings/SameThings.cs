@@ -17,22 +17,22 @@ namespace SameThings
 
         public override void OnEnabled()
         {
-            base.OnEnabled();
-
             Instance = this;
 
             EventHandlers.SubscribeAll();
             _harmony.PatchAll();
+
+            base.OnEnabled();
         }
 
         public override void OnDisabled()
         {
-            base.OnDisabled();
-
             EventHandlers.UnSubscribeAll();
             _harmony.UnpatchAll();
 
             Instance = null;
+
+            base.OnDisabled();
         }
     }
 }
