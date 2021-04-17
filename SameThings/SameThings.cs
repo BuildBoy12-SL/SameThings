@@ -10,8 +10,8 @@ namespace SameThings
 
         public override string Name { get; } = "SameThings";
         public override string Author { get; } = "Build";
-        public override Version Version { get; } = new Version(1, 0, 1);
-        public override Version RequiredExiledVersion { get; } = new Version(2, 3, 4);
+        public override Version Version { get; } = new Version(1, 0, 2);
+        public override Version RequiredExiledVersion { get; } = new Version(2, 9, 4);
 
         private readonly Harmony _harmony = new Harmony(nameof(SameThings).ToLowerInvariant());
 
